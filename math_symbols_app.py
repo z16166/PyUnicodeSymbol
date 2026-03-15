@@ -115,8 +115,9 @@ class MathSymbolViewer(QMainWindow):
         self.init_ui()
 
     def initialize_featured_data(self):
-        superscripts = [chr(0x2070), chr(0x00B9), chr(0x00B2), chr(0x00B3)] + [chr(c) for c in range(0x2074, 0x207A)]
-        subscripts = [chr(c) for c in range(0x2080, 0x208A)]
+        # Complete Superscripts and Subscripts range (2070-209F)
+        # Plus the ones in Latin-1: ² (B2), ³ (B3), ¹ (B9)
+        sub_sup_list = [chr(0x00B2), chr(0x00B3), chr(0x00B9)] + [chr(c) for c in range(0x2070, 0x20A0)]
         
         return {
             "逻辑与集合 (Logic & Sets)": [(0x2200, 0x22FF), (0x2A00, 0x2AFF)],
@@ -125,7 +126,8 @@ class MathSymbolViewer(QMainWindow):
             "拓扑学 (Topology)": [0x2202, 0x2207, (0x27C0, 0x27EF), (0x2980, 0x29FF)],
             "模型论 (Model Theory)": [(0x22A2, 0x22AF), (0x227C, 0x227D), (0x2250, 0x225F), (0x2300, 0x23FF)],
             "类型论 / λ 演算 (Type Theory)": [0x03BB, 0x03BC, 0x03A0, 0x03A3, 0x2200, 0x2203, 0x2192, 0x21A3, 0x21A6, 0x22A2, 0x22EE, 0x2254, (0x27E6, 0x27EB)],
-            "上标与下标 (Sub/Superscripts)": superscripts + subscripts,
+            "上标与下标 (Sub/Superscripts)": sub_sup_list,
+            "表情符号 (Smilies)": [(0x1F600, 0x1F64F)],
             "常用杂项数学符号 (Misc)": [0x221E, (0x222B, 0x2233), 0x2211, (0x220F, 0x2210), 0x2212, (0x2215, 0x2218), (0x221A, 0x221D), (0x223C, 0x2240), (0x2241, 0x2250)],
             "段落编号 (Numbers)": [(0x2460, 0x24FF), (0x2768, 0x2775), 0x24EA, (0x2776, 0x2793)]
         }
