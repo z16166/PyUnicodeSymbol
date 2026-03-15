@@ -115,21 +115,21 @@ class MathSymbolViewer(QMainWindow):
         self.init_ui()
 
     def initialize_featured_data(self):
-        # Complete Superscripts and Subscripts range (2070-209F)
-        # Plus common missing subscripts (i, j, r, u, v)
-        # i: 1D62, j: 2C7C, r: 1D63, u: 1D64, v: 1D65
-        extra_subs = [chr(0x1D62), chr(0x2C7C), chr(0x1D63), chr(0x1D64), chr(0x1D65)]
-        
+        # 1. Superscripts List
+        # Latin-1: ² (B2), ³ (B3), ¹ (B9) + Range 2070-207F
         # Plus comprehensive superscript letters (a-z)
-        # a:1D43, b:1D47, c:1D9C, d:1D48, e:1D49, f:1DA0, g:1D4D, h:02B0, i:2071, j:02B2, k:1D4F, l:02E1, m:1D50, n:207F, o:1D52, p:1D56, r:02B3, s:02E2, t:1D57, u:1D58, v:1D5B, w:02B7, x:02E3, y:02B8, z:1DBB
         extra_sups = [
             chr(0x1D43), chr(0x1D47), chr(0x1D9C), chr(0x1D48), chr(0x1D49), chr(0x1DA0), 
             chr(0x1D4D), chr(0x02B0), chr(0x2071), chr(0x02B2), chr(0x1D4F), chr(0x02E1), 
             chr(0x1D50), chr(0x207F), chr(0x1D52), chr(0x1D56), chr(0x02B3), chr(0x02E2), 
             chr(0x1D57), chr(0x1D58), chr(0x1D5B), chr(0x02B7), chr(0x02E3), chr(0x02B8), chr(0x1DBB)
         ]
+        sups_list = [chr(0x00B2), chr(0x00B3), chr(0x00B9)] + [chr(c) for c in range(0x2070, 0x2080)] + extra_sups
         
-        sub_sup_list = [chr(0x00B2), chr(0x00B3), chr(0x00B9)] + [chr(c) for c in range(0x2070, 0x20A0)] + extra_subs + extra_sups
+        # 2. Subscripts List
+        # Range 2080-209F + extra math subs (i, j, r, u, v)
+        extra_subs = [chr(0x1D62), chr(0x2C7C), chr(0x1D63), chr(0x1D64), chr(0x1D65)]
+        subs_list = [chr(c) for c in range(0x2080, 0x20A0)] + extra_subs
         
         return {
             "逻辑与集合 (Logic & Sets)": [(0x2200, 0x22FF), (0x2A00, 0x2AFF)],
@@ -138,7 +138,8 @@ class MathSymbolViewer(QMainWindow):
             "拓扑学 (Topology)": [0x2202, 0x2207, (0x27C0, 0x27EF), (0x2980, 0x29FF)],
             "模型论 (Model Theory)": [(0x22A2, 0x22AF), (0x227C, 0x227D), (0x2250, 0x225F), (0x2300, 0x23FF)],
             "类型论 / λ 演算 (Type Theory)": [0x03BB, 0x03BC, 0x03A0, 0x03A3, 0x2200, 0x2203, 0x2192, 0x21A3, 0x21A6, 0x22A2, 0x22EE, 0x2254, (0x27E6, 0x27EB)],
-            "上标与下标 (Sub/Superscripts)": sub_sup_list,
+            "上标字符 (Superscripts)": sups_list,
+            "下标字符 (Subscripts)": subs_list,
             "表情符号 (Smilies)": [(0x1F600, 0x1F64F)],
             "常用杂项数学符号 (Misc)": [0x221E, (0x222B, 0x2233), 0x2211, (0x220F, 0x2210), 0x2212, (0x2215, 0x2218), (0x221A, 0x221D), (0x223C, 0x2240), (0x2241, 0x2250)],
             "段落编号 (Numbers)": [(0x2460, 0x24FF), (0x2768, 0x2775), 0x24EA, (0x2776, 0x2793)]
