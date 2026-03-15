@@ -250,7 +250,16 @@ class MathSymbolViewer(QMainWindow):
         self.worker = LoadWorker(symbols)
         self.worker.finished_batch.connect(self.add_symbols_batch)
         self.worker.progress.connect(self.progress_bar.setValue)
-        self.worker.finished.connect(lambda: self.progress_bar.setVisible(False))
+        
+        # Performance optimization: Suspend updates during batch addition
+        self.symbol_container.setUpdatesEnabled(False)
+        
+        def on_finished():
+            self.progress_bar.setVisible(False)
+            self.symbol_container.setUpdatesEnabled(True)
+            self.symbol_container.update()
+            
+        self.worker.finished.connect(on_finished)
         self.worker.start()
 
     @Slot(list)
@@ -269,13 +278,19 @@ class MathSymbolViewer(QMainWindow):
 
     def filter_symbols(self, text):
         text = text.lower().strip()
+        
+        # 1. Filter Sidebar Categories
+        for i in range(self.sidebar.count()):
+            item = self.sidebar.item(i)
+            matches = not text or text in item.text().lower()
+            item.setHidden(not matches)
+
         if not text:
             self.request_category_load(self.sidebar.currentRow())
             return
 
+        # 2. Global Symbol Search
         all_matches = []
-        # Search in the current active mode's data source for performance, 
-        # or search globally? Let's search globally to be "Ultimate"
         search_pool = {**self.featured_data, **self.full_blocks_data}
         
         for cat, ranges in search_pool.items():
