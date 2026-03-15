@@ -16,7 +16,13 @@ class SymbolButton(QPushButton):
         self.char = char
         self.setFixedSize(QSize(60, 60))
         self.setFont(QFont("Segoe UI Symbol", 24))
-        self.setToolTip(f"Code: U+{ord(char):04X}\nClick to copy")
+        
+        try:
+            name = unicodedata.name(char).title()
+        except:
+            name = "Unknown Name"
+            
+        self.setToolTip(f"Code: U+{ord(char):04X}\nName: {name}\nClick to copy")
         self.setStyleSheet("""
             QPushButton {
                 background-color: #ffffff;
