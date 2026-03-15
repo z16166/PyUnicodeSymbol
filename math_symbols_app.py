@@ -5,10 +5,138 @@ import unicodedata
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
     QListWidget, QScrollArea, QPushButton, QLabel, QLineEdit,
-    QFrame, QGridLayout, QStatusBar, QProgressBar, QComboBox
+    QFrame, QGridLayout, QStatusBar, QProgressBar, QComboBox, QSplitter
 )
 from PySide6.QtCore import Qt, QSize, QThread, Signal, QTimer, Slot
 from PySide6.QtGui import QFont, QClipboard
+
+BLOCK_TRANSLATIONS = {
+    "Basic Latin": "基础拉丁语",
+    "Latin-1 Supplement": "拉丁语-1 补充",
+    "Latin Extended-A": "拉丁语扩展-A",
+    "Latin Extended-B": "拉丁语扩展-B",
+    "IPA Extensions": "IPA 扩展",
+    "Spacing Modifier Letters": "占位修饰符号",
+    "Combining Diacritical Marks": "组合变音符号",
+    "Greek and Coptic": "希腊语及科普特语",
+    "Cyrillic": "西里尔字母",
+    "Cyrillic Supplement": "西里尔字母补充",
+    "Armenian": "亚美尼亚语",
+    "Hebrew": "希伯来语",
+    "Arabic": "阿拉伯语",
+    "Syriac": "叙利亚语",
+    "Arabic Supplement": "阿拉伯语补充",
+    "Thaana": "它拿字母",
+    "NKo": "西非书面语言",
+    "Samaritan": "撒马利亚语",
+    "Mandaic": "曼底安语",
+    "Devanagari": "天城文",
+    "Bengali": "孟加拉语",
+    "Gurmukhi": "古木基文",
+    "Gujarati": "古吉拉特文",
+    "Oriya": "奥里亚文",
+    "Tamil": "泰米尔文",
+    "Telugu": "泰卢固文",
+    "Kannada": "康纳达文",
+    "Malayalam": "马拉雅拉姆文",
+    "Sinhala": "僧伽罗文",
+    "Thai": "泰文",
+    "Lao": "老挝文",
+    "Tibetan": "藏文",
+    "Myanmar": "缅甸语",
+    "Georgian": "格鲁吉亚语",
+    "Hangul Jamo": "谚文字母",
+    "Ethiopic": "埃塞俄比亚语",
+    "Cherokee": "切罗基语",
+    "Unified Canadian Aboriginal Syllabics": "统一加拿大原住民音节文字",
+    "Ogham": "欧甘字母",
+    "Runic": "卢恩字母",
+    "Tagalog": "塔加路语",
+    "Hanunoo": "哈努诺字母",
+    "Buhid": "布希德文",
+    "Tagbanwa": "塔格巴努亚文",
+    "Khmer": "高棉语",
+    "Mongolian": "蒙古文",
+    "Limbu": "林布文",
+    "Tai Le": "德宏傣文",
+    "New Tai Lue": "西双版纳新傣文",
+    "Khmer Symbols": "高棉语符号",
+    "Buginese": "布吉文",
+    "Tai Tham": "兰纳文",
+    "Balinese": "巴厘文",
+    "Sundanese": "巽他文",
+    "Batak": "巴塔克文",
+    "Lepcha": "勒嘉文",
+    "Ol Chiki": "桑塔利文",
+    "Phonetic Extensions": "音标扩展",
+    "Latin Extended Additional": "拉丁语扩展附加",
+    "Greek Extended": "希腊语扩展",
+    "General Punctuation": "常用标点",
+    "Superscripts and Subscripts": "上标与下标",
+    "Currency Symbols": "货币符号",
+    "Combining Diacritical Marks for Symbols": "符号用组合变音符号",
+    "Letterlike Symbols": "类字母符号",
+    "Number Forms": "数字形式",
+    "Arrows": "箭头",
+    "Mathematical Operators": "数学运算符",
+    "Miscellaneous Technical": "杂项技术符号",
+    "Control Pictures": "控制图形",
+    "Optical Character Recognition": "光学字符识别 (OCR)",
+    "Enclosed Alphanumerics": "带圈字母数字",
+    "Box Drawing": "制表符",
+    "Block Elements": "方块元素",
+    "Geometric Shapes": "几何图形",
+    "Miscellaneous Symbols": "杂项符号",
+    "Dingbats": "装饰符号 (Dingbats)",
+    "Miscellaneous Mathematical Symbols-A": "杂项数学符号-A",
+    "Supplemental Arrows-A": "补充箭头-A",
+    "Braille Patterns": "盲文点字",
+    "Supplemental Arrows-B": "补充箭头-B",
+    "Miscellaneous Mathematical Symbols-B": "杂项数学符号-B",
+    "Supplemental Mathematical Operators": "补充数学运算符",
+    "Miscellaneous Symbols and Arrows": "杂项符号及箭头",
+    "CJK Radicals Supplement": "中日韩汉字部首补充",
+    "Kangxi Radicals": "康熙部首",
+    "Ideographic Description Characters": "表意文字描述字符",
+    "CJK Symbols and Punctuation": "中日韩符号和标点",
+    "Hiragana": "平假名",
+    "Katakana": "片假名",
+    "Bopomofo": "注音符号",
+    "Hangul Compatibility Jamo": "谚文兼容字母",
+    "Kanbun": "汉文训读符号",
+    "CJK Strokes": "中日韩笔画",
+    "Enclosed CJK Letters and Months": "带圈中日韩字母及月份",
+    "CJK Compatibility": "中日韩兼容字符",
+    "CJK Unified Ideographs Extension A": "中日韩统一表意文字扩展区-A",
+    "CJK Unified Ideographs": "中日韩统一表意文字 (常用汉字)",
+    "Yi Syllables": "彝文音节",
+    "Yi Radicals": "彝文部首",
+    "Yijing Hexagram Symbols": "易经六十四卦符号",
+    "Hangul Syllables": "谚文音节",
+    "CJK Compatibility Ideographs": "中日韩兼容表意文字",
+    "Alphabetic Presentation Forms": "字母列报形式",
+    "Arabic Presentation Forms-A": "阿拉伯语列报形式-A",
+    "Variation Selectors": "变体选择符",
+    "Vertical Forms": "竖排形式",
+    "Combining Half Marks": "组合半位符号",
+    "CJK Compatibility Forms": "中日韩兼容形式",
+    "Small Form Variants": "小写变体",
+    "Arabic Presentation Forms-B": "阿拉伯语列报形式-B",
+    "Halfwidth and Fullwidth Forms": "半角及全角字符",
+    "Specials": "特殊字符",
+    "Mathematical Alphanumeric Symbols": "数学字母数字符号",
+    "Emoticons": "表情符号 (Emoticons)",
+    "Miscellaneous Symbols and Pictographs": "杂项符号及象形文字",
+    "Transport and Map Symbols": "交通及地图符号",
+    "Enclosed Alphanumeric Supplement": "带圈字母数字补充",
+    "Enclosed Ideographic Supplement": "带圈表意文字补充",
+    "CJK Unified Ideographs Extension B": "中日韩统一表意文字扩展区-B",
+    "CJK Unified Ideographs Extension C": "中日韩统一表意文字扩展区-C",
+    "CJK Unified Ideographs Extension D": "中日韩统一表意文字扩展区-D",
+    "CJK Unified Ideographs Extension E": "中日韩统一表意文字扩展区-E",
+    "CJK Unified Ideographs Extension F": "中日韩统一表意文字扩展区-F",
+    "CJK Unified Ideographs Extension G": "中日韩统一表意文字扩展区-G",
+}
 
 class SymbolButton(QPushButton):
     def __init__(self, char, parent=None):
@@ -177,22 +305,29 @@ class MathSymbolViewer(QMainWindow):
                     match = re.match(r"([0-9A-Fa-f]+)\.\.([0-9A-Fa-f]+);\s*(.*)", line)
                     if match:
                         start_hex, end_hex, name = match.groups()
-                        blocks[name] = [(int(start_hex, 16), int(end_hex, 16))]
+                        # Add translation if exists
+                        chinese_name = BLOCK_TRANSLATIONS.get(name)
+                        display_name = f"{name} ({chinese_name})" if chinese_name else name
+                        blocks[display_name] = [(int(start_hex, 16), int(end_hex, 16))]
         except: pass
         return blocks
 
     def init_ui(self):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        main_layout = QHBoxLayout(central_widget)
+        main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(10)
+        main_layout.setSpacing(0)
+
+        # Create Splitter
+        self.splitter = QSplitter(Qt.Horizontal)
+        main_layout.addWidget(self.splitter)
 
         # 1. Sidebar Panel (Categories)
         sidebar_panel = QWidget()
-        sidebar_panel.setFixedWidth(260)
         sidebar_layout = QVBoxLayout(sidebar_panel)
-        sidebar_layout.setContentsMargins(0, 0, 0, 0)
+        sidebar_layout.setContentsMargins(0, 0, 5, 0)
+        sidebar_layout.setSpacing(10)
 
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["⭐ 精选数学符号", "🌐 全部 Unicode 区块"])
@@ -201,7 +336,7 @@ class MathSymbolViewer(QMainWindow):
 
         # Sidebar Search
         self.cat_search = QLineEdit()
-        self.cat_search.setPlaceholderText("🔍 过滤分类名称...")
+        self.cat_search.setPlaceholderText("🔍 过滤分类名称 (支持中英)...")
         self.cat_search.textChanged.connect(self.filter_categories)
         sidebar_layout.addWidget(self.cat_search)
 
@@ -210,12 +345,13 @@ class MathSymbolViewer(QMainWindow):
         self.sidebar.currentRowChanged.connect(self.request_category_load)
         sidebar_layout.addWidget(self.sidebar)
         
-        main_layout.addWidget(sidebar_panel)
+        self.splitter.addWidget(sidebar_panel)
 
         # 2. Main Content Panel
         right_panel = QWidget()
         right_layout = QVBoxLayout(right_panel)
-        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setContentsMargins(10, 0, 0, 0)
+        right_layout.setSpacing(10)
         
         # Main Search
         search_layout = QHBoxLayout()
@@ -234,7 +370,7 @@ class MathSymbolViewer(QMainWindow):
         # Scroll Area for Grid
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setStyleSheet("QScrollArea { border: none; background-color: #ffffff; }")
+        self.scroll_area.setStyleSheet("QScrollArea { border: 1px solid #e0e0e0; background-color: #ffffff; border-radius: 5px; }")
         
         self.scroll_area.verticalScrollBar().valueChanged.connect(self.on_scroll)
         
@@ -246,6 +382,13 @@ class MathSymbolViewer(QMainWindow):
         
         right_layout.addWidget(self.scroll_area)
         
+        self.splitter.addWidget(right_panel)
+        
+        # Initial splitter sizes
+        self.splitter.setSizes([280, 920])
+        self.splitter.setStretchFactor(0, 0)
+        self.splitter.setStretchFactor(1, 1)
+
         # Load Hint Label
         self.load_hint = QLabel("")
         self.load_hint.setAlignment(Qt.AlignCenter)
@@ -261,8 +404,6 @@ class MathSymbolViewer(QMainWindow):
         self.load_hint.setVisible(False)
         right_layout.addWidget(self.load_hint)
         
-        main_layout.addWidget(right_panel)
-
         self.setStatusBar(QStatusBar())
         
         # Debounce/Delay timer for search
