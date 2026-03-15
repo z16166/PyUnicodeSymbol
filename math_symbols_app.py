@@ -236,6 +236,11 @@ class MathSymbolViewer(QMainWindow):
         self.search_timer.setSingleShot(True)
         self.search_timer.timeout.connect(self.perform_global_search)
 
+        # Debounce timer for resize
+        self.resize_timer = QTimer()
+        self.resize_timer.setSingleShot(True)
+        self.resize_timer.timeout.connect(self.deferred_resize)
+
         self.switch_mode(0)
 
     def switch_mode(self, index):
@@ -303,6 +308,8 @@ class MathSymbolViewer(QMainWindow):
     def reset_and_load_initial(self):
         self.clear_grid()
         self.load_next_batch()
+        # Initial check to fill space if 200 isn't enough for a large screen
+        QTimer.singleShot(200, self.check_and_fill_space)
 
     def deferred_resize(self):
         # On resize, rearrange existing widgets into new grid columns
@@ -330,6 +337,30 @@ class MathSymbolViewer(QMainWindow):
             
         self.symbol_container.setUpdatesEnabled(True)
         self.symbol_container.update()
+        self.update_load_hint()
+
+        # Always check if we need to fill more space after a resize
+        if self.loaded_count < len(self.active_symbols):
+            QTimer.singleShot(200, self.check_and_fill_space)
+
+    def check_and_fill_space(self):
+        if self.loaded_count >= len(self.active_symbols):
+            self.update_load_hint()
+            return
+            
+        # Robust check: if container height is less than viewport height + margin, load more
+        container_height = self.symbol_container.sizeHint().height()
+        viewport_height = self.scroll_area.viewport().height()
+        
+        # Also check scrollbar as a fallback
+        bar = self.scroll_area.verticalScrollBar()
+        
+        if container_height < viewport_height + 50 or bar.maximum() <= 0:
+            self.load_next_batch()
+            # If we loaded more, check again after a short delay for layout to update
+            QTimer.singleShot(200, self.check_and_fill_space)
+        else:
+            self.update_load_hint()
 
     def load_next_batch(self):
         if self.loaded_count >= len(self.active_symbols): 
