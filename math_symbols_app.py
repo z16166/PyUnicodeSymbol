@@ -304,6 +304,33 @@ class MathSymbolViewer(QMainWindow):
         self.clear_grid()
         self.load_next_batch()
 
+    def deferred_resize(self):
+        # On resize, rearrange existing widgets into new grid columns
+        if not self.active_symbols or self.symbol_grid.count() == 0:
+            return
+            
+        viewport_width = self.scroll_area.viewport().width()
+        if viewport_width <= 0:
+            viewport_width = self.scroll_area.width() - 20
+        cols = max(1, (viewport_width - 30) // 75)
+        
+        # Suspend updates during reflow
+        self.symbol_container.setUpdatesEnabled(False)
+        
+        widgets = []
+        # Extract all widgets
+        while self.symbol_grid.count():
+            item = self.symbol_grid.takeAt(0)
+            if item.widget():
+                widgets.append(item.widget())
+        
+        # Re-add widgets in new positions
+        for idx, widget in enumerate(widgets):
+            self.symbol_grid.addWidget(widget, idx // cols, idx % cols)
+            
+        self.symbol_container.setUpdatesEnabled(True)
+        self.symbol_container.update()
+
     def load_next_batch(self):
         if self.loaded_count >= len(self.active_symbols): 
             self.update_load_hint()
@@ -384,10 +411,7 @@ class MathSymbolViewer(QMainWindow):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        # On resize, if we have active symbols, we should ideally re-layout.
-        # But to keep it simple and avoid lag, we just reload the current count.
-        # Better: keep track of visible count and redo.
-        pass
+        self.resize_timer.start(300)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
