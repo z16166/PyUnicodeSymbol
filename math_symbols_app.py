@@ -15,7 +15,20 @@ class SymbolButton(QPushButton):
         super().__init__(char, parent)
         self.char = char
         self.setFixedSize(QSize(60, 60))
-        self.setFont(QFont("Segoe UI Symbol", 24))
+        
+        # Multi-font fallback strategy for maximum coverage on Windows
+        font = QFont()
+        font.setFamilies([
+            "Segoe UI Symbol", 
+            "Segoe UI Emoji", 
+            "Cambria Math", 
+            "Microsoft YaHei", 
+            "Malgun Gothic", 
+            "Arial Unicode MS",
+            "Noto Sans Symbols"
+        ])
+        font.setPointSize(24)
+        self.setFont(font)
         
         try:
             name = unicodedata.name(char).title()
