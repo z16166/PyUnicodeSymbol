@@ -116,8 +116,20 @@ class MathSymbolViewer(QMainWindow):
 
     def initialize_featured_data(self):
         # Complete Superscripts and Subscripts range (2070-209F)
-        # Plus the ones in Latin-1: ² (B2), ³ (B3), ¹ (B9)
-        sub_sup_list = [chr(0x00B2), chr(0x00B3), chr(0x00B9)] + [chr(c) for c in range(0x2070, 0x20A0)]
+        # Plus common missing subscripts (i, j, r, u, v)
+        # i: 1D62, j: 2C7C, r: 1D63, u: 1D64, v: 1D65
+        extra_subs = [chr(0x1D62), chr(0x2C7C), chr(0x1D63), chr(0x1D64), chr(0x1D65)]
+        
+        # Plus comprehensive superscript letters (a-z)
+        # a:1D43, b:1D47, c:1D9C, d:1D48, e:1D49, f:1DA0, g:1D4D, h:02B0, i:2071, j:02B2, k:1D4F, l:02E1, m:1D50, n:207F, o:1D52, p:1D56, r:02B3, s:02E2, t:1D57, u:1D58, v:1D5B, w:02B7, x:02E3, y:02B8, z:1DBB
+        extra_sups = [
+            chr(0x1D43), chr(0x1D47), chr(0x1D9C), chr(0x1D48), chr(0x1D49), chr(0x1DA0), 
+            chr(0x1D4D), chr(0x02B0), chr(0x2071), chr(0x02B2), chr(0x1D4F), chr(0x02E1), 
+            chr(0x1D50), chr(0x207F), chr(0x1D52), chr(0x1D56), chr(0x02B3), chr(0x02E2), 
+            chr(0x1D57), chr(0x1D58), chr(0x1D5B), chr(0x02B7), chr(0x02E3), chr(0x02B8), chr(0x1DBB)
+        ]
+        
+        sub_sup_list = [chr(0x00B2), chr(0x00B3), chr(0x00B9)] + [chr(c) for c in range(0x2070, 0x20A0)] + extra_subs + extra_sups
         
         return {
             "逻辑与集合 (Logic & Sets)": [(0x2200, 0x22FF), (0x2A00, 0x2AFF)],
